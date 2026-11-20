@@ -1,0 +1,25 @@
+# Plan B: solo activalo si el notebook 00 muestra que Databricks no llega a OpenSky.
+name: ingesta-opensky
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # cada 15 min (GitHub puede demorar algunos minutos)
+  workflow_dispatch: {}
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python ingesta_externa/ingest_opensky.py
+        env:
+          OPENSKY_CLIENT_ID: ${{ secrets.OPENSKY_CLIENT_ID }}
+          OPENSKY_CLIENT_SECRET: ${{ secrets.OPENSKY_CLIENT_SECRET }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          VOLUME_PATH: /Volumes/workspace/vuelos/raw/states
+          BBOX: "-55.5,-73.6,-21.7,-53.6"
